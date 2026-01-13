@@ -29,9 +29,6 @@ CLASS_MAP = {'car': 0, 'person': 1, 'traffic light': 2}
 INPUT_SIZE = 512
 OUTPUT_SIZE = 128  # Stride 4 (512 / 4)
 
-# ==========================================
-# HELPER FUNCTIONS (Needed for Dataset)
-# ==========================================
 def gaussian2D(shape, sigma=1):
     m, n = [(ss - 1.) / 2. for ss in shape]
     y, x = np.ogrid[-m:m+1,-n:n+1]
@@ -56,7 +53,7 @@ def draw_gaussian(heatmap, center, radius, k=1):
     return heatmap
 
 # ==========================================
-# PART 1: DATASET HANDLING (DENSE TARGETS)
+# DATASET HANDLING
 # ==========================================
 class BDDDataset(Dataset):
     def __init__(self, img_dir, label_file, limit=Train_Size, transform=None):
@@ -165,7 +162,7 @@ class BDDDataset(Dataset):
             torch.from_numpy(reg_mask)
         )
 # ==========================================
-# PART 2: MODEL (Added Offset Head)
+# MODEL 
 # ==========================================
 class SimpleCenterNet(nn.Module):
     def __init__(self, num_classes=3):
@@ -196,7 +193,7 @@ class SimpleCenterNet(nn.Module):
         return hm, wh, off
 
 # ==========================================
-# PART 3: LOSS FUNCTION (Simplified)
+# LOSS FUNCTION 
 # ==========================================
 def focal_loss(pred, gt):
     pos_inds = gt.eq(1).float()
@@ -234,7 +231,7 @@ def dense_centernet_loss(pred_hm, pred_wh, pred_off, gt_hm, gt_wh, gt_off, mask)
     return total_loss, hm_loss, wh_loss, off_loss
 
 # ==========================================
-# PART 4: TRAINING LOOP
+# TRAINING LOOP
 # ==========================================
 def train_simple_model():
     print("\n--- Starting CenterNet Training ---")
@@ -287,7 +284,7 @@ def train_simple_model():
     return model
 
 # ==========================================
-# PART 5: DECODING (Updated for Dense Logic)
+# DECODING 
 # ==========================================
 def decode_detections(pred_hm, pred_wh, pred_off, threshold=0.3):
     batch_boxes = []
@@ -333,7 +330,7 @@ def decode_detections(pred_hm, pred_wh, pred_off, threshold=0.3):
     return batch_boxes
 
 # ==========================================
-# PART 6: VISUALIZATION
+# VISUALIZATION
 # ==========================================
 def compare_models(simple_model, yolo_model, loader, device, num_images):
     print(f"\n--- Generating {num_images} Comparison Images ---")
@@ -397,7 +394,7 @@ def compare_models(simple_model, yolo_model, loader, device, num_images):
             break
 
 # ==========================================
-# PART 7: YOLO HANDLING (Unchanged)
+# YOLO HANDLING 
 # ==========================================
 def run_yolo():
     print("\n--- Training YOLOv8 (Reference) ---")
