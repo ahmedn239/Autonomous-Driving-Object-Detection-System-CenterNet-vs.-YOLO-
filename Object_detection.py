@@ -17,13 +17,16 @@ import time
 # ==========================================
 # CONFIGURATION
 # ==========================================
-DATASET_ROOT = r"C:\ADE\3rd Term\ADAS\Object detection" 
+'''DATASET_ROOT = r"C:\ADE\3rd Term\ADAS\Object detection" 
 IMG_DIR = r"C:\ADE\3rd Term\ADAS\Object detection\images\100k\train"
-LABEL_FILE = r"C:\ADE\3rd Term\ADAS\Object detection\labels\100k\train\bdd100k_train_combined.json"
-DATASET_ROOT = "./data"
-IMG_DIR = "./data/images/train"
-LABEL_FILE = "./data/labels/bdd100k_train_combined.json"
-
+LABEL_FILE = r"C:\ADE\3rd Term\ADAS\Object detection\labels\100k\train\bdd100k_train_combined.json"'''
+DATASET_ROOT = "./Object_detection"
+IMG_DIR = "./Object_detection/images/100k/train"
+LABEL_FILE = "./Object_detection/labels/100k/train/bdd100k_train_combined.json"
+VAL_DIR = "./Object_detection/images/100k/val"
+VAL_LABEL_FILE = "./Object_detection/labels/100k/val/bdd100k_val_combined.json"
+Train_Size = 400  # For quick testing; set to None for full dataset
+Batch_Size = 8
 CLASSES = ['car', 'person', 'traffic light'] 
 CLASS_MAP = {'car': 0, 'person': 1, 'traffic light': 2}
 INPUT_SIZE = 512
@@ -59,7 +62,7 @@ def draw_gaussian(heatmap, center, radius, k=1):
 # PART 1: DATASET HANDLING (DENSE TARGETS)
 # ==========================================
 class BDDDataset(Dataset):
-    def __init__(self, img_dir, label_file, limit=400, transform=None):
+    def __init__(self, img_dir, label_file, limit=Train_Size, transform=None):
         self.img_dir = img_dir
         self.transform = transform
         print(f"Loading annotations from {label_file}...")
@@ -240,9 +243,9 @@ def train_simple_model():
     print("\n--- Starting CenterNet Training ---")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    ds = BDDDataset(IMG_DIR, LABEL_FILE, limit=400)
+    ds = BDDDataset(IMG_DIR, LABEL_FILE, limit=Train_Size)
     
-    loader = DataLoader(ds, batch_size=32, shuffle=True, num_workers=8, pin_memory=True)
+    loader = DataLoader(ds, batch_size=Batch_Size, shuffle=True, num_workers=2, pin_memory=True)
     
     model = SimpleCenterNet(num_classes=len(CLASSES)).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
@@ -405,7 +408,7 @@ def run_yolo():
     image_folder = IMG_DIR 
     if not os.path.exists(image_folder): return YOLO("yolov8n.pt") 
 
-    all_images = sorted(os.listdir(image_folder))[:2000] 
+    all_images = sorted(os.listdir(image_folder))[:Train_Size] 
     with open(mini_train_path, "w") as f:
         for img in all_images:
             f.write(os.path.join(image_folder, img) + "\n")
@@ -414,7 +417,7 @@ def run_yolo():
     with open("bdd_project.yaml", "w") as f: f.write(yaml_content)
         
     model = YOLO("yolov8n.pt") 
-    model.train(data="bdd_project.yaml", epochs=50, imgsz=512, batch=32, workers=8, project="bdd_yolo", name="run_comparison", exist_ok=True, verbose=False)
+    model.train(data="bdd_project.yaml", epochs=50, imgsz=512, batch=Batch_Size, workers=8, project="bdd_yolo", name="run_comparison", exist_ok=True, verbose=False)
     return model
 
 if __name__ == "__main__":
@@ -428,6 +431,6 @@ if __name__ == "__main__":
     yolo_model = run_yolo()
     #yolo_model = YOLO(YOLO_PATH)
     # 3. COMPARE
-    test_ds = BDDDataset(IMG_DIR, LABEL_FILE) # Small limit for viz
+    test_ds = BDDDataset(VAL_DIR, VAL_LABEL_FILE) # Small limit for viz
     loader = DataLoader(test_ds, batch_size=1, shuffle=True)
     compare_models(simple_model, yolo_model, loader, device, num_images=5)
