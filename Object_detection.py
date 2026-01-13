@@ -17,16 +17,13 @@ import time
 # ==========================================
 # CONFIGURATION
 # ==========================================
-'''DATASET_ROOT = r"C:\ADE\3rd Term\ADAS\Object detection" 
-IMG_DIR = r"C:\ADE\3rd Term\ADAS\Object detection\images\100k\train"
-LABEL_FILE = r"C:\ADE\3rd Term\ADAS\Object detection\labels\100k\train\bdd100k_train_combined.json"'''
 DATASET_ROOT = "./Object_detection"
 IMG_DIR = "./Object_detection/images/100k/train"
 LABEL_FILE = "./Object_detection/labels/100k/train/bdd100k_train_combined.json"
 VAL_DIR = "./Object_detection/images/100k/val"
 VAL_LABEL_FILE = "./Object_detection/labels/100k/val/bdd100k_val_combined.json"
-Train_Size = 400  # For quick testing; set to None for full dataset
-Batch_Size = 8
+Train_Size = 50000  #training images
+Batch_Size = 32
 CLASSES = ['car', 'person', 'traffic light'] 
 CLASS_MAP = {'car': 0, 'person': 1, 'traffic light': 2}
 INPUT_SIZE = 512
