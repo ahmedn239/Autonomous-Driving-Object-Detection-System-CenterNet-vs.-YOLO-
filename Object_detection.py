@@ -20,6 +20,9 @@ import time
 DATASET_ROOT = r"C:\ADE\3rd Term\ADAS\Object detection" 
 IMG_DIR = r"C:\ADE\3rd Term\ADAS\Object detection\images\100k\train"
 LABEL_FILE = r"C:\ADE\3rd Term\ADAS\Object detection\labels\100k\train\bdd100k_train_combined.json"
+DATASET_ROOT = "./data"
+IMG_DIR = "./data/images/train"
+LABEL_FILE = "./data/labels/bdd100k_train_combined.json"
 
 CLASSES = ['car', 'person', 'traffic light'] 
 CLASS_MAP = {'car': 0, 'person': 1, 'traffic light': 2}
@@ -315,7 +318,7 @@ def decode_detections(pred_hm, pred_wh, pred_off, threshold=0.3):
             cy_feat = r.item() + off_y
             
             # 4. Scale everything back to IMAGE SIZE
-            # Note: In dataset we did w = (x2-x1)/4. So here we multiply by 4.
+            
             w = w_feat * stride
             h = h_feat * stride
             cx = cx_feat * stride
@@ -336,8 +339,7 @@ def compare_models(simple_model, yolo_model, loader, device, num_images):
     print(f"\n--- Generating {num_images} Comparison Images ---")
     simple_model.eval()
     
-    # We need a NEW loader for vis that returns raw images too, 
-    # but for simplicity, we'll just use the Training loader and decode
+    
     iter_loader = iter(loader)
     
     class_colors = {0: "blue", 1: "green", 2: "red"}
@@ -423,8 +425,8 @@ if __name__ == "__main__":
     simple_model = train_simple_model()
     
     # 2. TRAIN YOLO
-    #yolo_model = run_yolo()
-    yolo_model = YOLO(YOLO_PATH)
+    yolo_model = run_yolo()
+    #yolo_model = YOLO(YOLO_PATH)
     # 3. COMPARE
     test_ds = BDDDataset(IMG_DIR, LABEL_FILE) # Small limit for viz
     loader = DataLoader(test_ds, batch_size=1, shuffle=True)
